@@ -35,6 +35,7 @@
 
 
 
+#define CW_NAME_MK2			CW_NAME "_mk2"
 #define CW_NAME_MK3			CW_NAME "_mk3"
 #define CW_NAME_MK4			CW_NAME "_mk4"
 
@@ -101,7 +102,9 @@ cw_hardware_floppy_bit(
 		if (bit == CW_BITR_HOSTSELECT0)  return (1);
 		if (bit == CW_BITR_HOSTSELECT1)  return (0);
 		}
-	if ((hrd->model == CW_HARDWARE_MODEL_MK3) || (hrd->model == CW_HARDWARE_MODEL_MK4))
+	if ((hrd->model == CW_HARDWARE_MODEL_MK2) ||
+	    (hrd->model == CW_HARDWARE_MODEL_MK3) ||
+	    (hrd->model == CW_HARDWARE_MODEL_MK4))
 		{
 		if (bit == CW_BITW_DENSITY)      return (0);
 		if (bit == CW_BITW_MOTOR0)       return (1);
@@ -147,6 +150,15 @@ cw_hardware_floppy_register(
 		if (reg == CW_REG_INDIR)       return (hrd->iobase + 0x07);
 		if (reg == CW_REG_CATCONTROL2) return (hrd->iobase + 0xf8);
 		}
+	if ((hrd->model == CW_HARDWARE_MODEL_MK2))
+		{
+		if (reg == CW_REG_CATMEM)      return (hrd->iobase + 0x0);
+		if (reg == CW_REG_CATABORT)    return (hrd->iobase + 0x1);
+		if (reg == CW_REG_CATCONTROL)  return (hrd->iobase + 0x2);
+		if (reg == CW_REG_CATOPTION)   return (hrd->iobase + 0x3);
+		if (reg == CW_REG_CATSTARTA)   return (hrd->iobase + 0x4);
+		if (reg == CW_REG_CATSTARTB)   return (hrd->iobase + 0x5);
+		}
 	if ((hrd->model == CW_HARDWARE_MODEL_MK3) || (hrd->model == CW_HARDWARE_MODEL_MK4))
 		{
 		if (reg == CW_REG_JOYDAT)      return (hrd->iobase + 0xc0);
@@ -163,6 +175,47 @@ cw_hardware_floppy_register(
 	cw_debug(1, "unknown register requested");
 	return (hrd->iobase + 0xff);
 	}
+
+
+static struct cw_hardware *cw_mk2_hrd;
+
+int cw_hardware_mk2_probe(unsigned int port)
+{
+	const char *name = CW_NAME_MK2;
+	struct cw_hardware *hrd = cw_mk2_hrd;
+
+	/* get next available controller struct */
+
+	hrd = cw_driver_get_hardware(-1);
+	if (hrd == NULL)
+		{
+		cw_error("number of %d supported controllers exceeded", CW_NR_CONTROLLERS);
+		return (-ENODEV);
+		}
+
+	request_region(port, 6, name);
+	hrd->model = CW_HARDWARE_MODEL_MK2;
+	hrd->iobase = port;
+	hrd->control_register = 255;
+	cw_notice("[c%d] registering %s at 0x%04x", hrd->cnt->num, name, port);
+
+	cw_driver_register_hardware(hrd);
+
+	return 0;
+}
+
+void cw_hardware_mk2_remove(void)
+{
+	struct cw_hardware *hrd = cw_mk2_hrd;
+
+	if (hrd == NULL)
+		return;
+
+	cw_driver_unregister_hardware(hrd);
+	release_region(hrd->iobase, 6);
+
+	cw_mk2_hrd = NULL;
+}
 
 
 

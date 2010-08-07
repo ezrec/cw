@@ -10,7 +10,7 @@ eMail:    cw@unusedino.de
 
 cw is (yet another) package for the Catweasel controller, look under [5] for
 other existing packages. This package is especially for accessing the floppy
-drives connected to Catweasel. Currently the MK3, MK4 and MK4+ controller
+drives connected to Catweasel. Currently the MK2, MK3, MK4 and MK4+ controller
 cards are supported. cw consists of a kernel driver and a companion user
 space program (cwtool). The kernel driver should work with Linux 2.4 and 2.6.
 Look at the homepage of the manufacturer http://www.jschoenfeld.com/ for more
@@ -70,6 +70,13 @@ manually:
 1a) load the module
     # insmod module/cw.o		(Linux 2.4)
     # insmod module/cw.ko		(Linux 2.6)
+
+    NOTE: For the CatWeasel Mk2, you will need a special 40-pin
+          IDE cable that has pins 37 and 38 swapped, and you
+          need to load the module as follows:
+
+          # insmod module/cw.ko cw_mk2_port=0x1f0   (Mk2 on Primary IDE)
+          # insmod module/cw.ko cw_mk2_port=0x170   (Mk2 on Secondary IDE)
 
 1b) make sure the module was loaded correctly
     # lsmod
