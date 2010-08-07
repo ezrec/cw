@@ -30,13 +30,15 @@
 
 
 #define CW_FLAG_CHRDEV_REGISTERED	(1 << 0)
-#define CW_FLAG_MK3_REGISTERED		(1 << 1)
-#define CW_FLAG_MK4_REGISTERED		(1 << 2)
+#define CW_FLAG_MK2_REGISTERED		(1 << 1)
+#define CW_FLAG_MK3_REGISTERED		(1 << 2)
+#define CW_FLAG_MK4_REGISTERED		(1 << 3)
 
 
 
 cw_int_t				cw_debug_level = 0;
 cw_int_t				cw_major = 120;
+unsigned int				cw_mk2_port = 0;
 static cw_count_t			cw_driver_controllers;
 static cw_flag_t			cw_driver_flags;
 
@@ -157,13 +159,13 @@ cw_driver_module_exit(
 		cw_floppy_exit(fls);
 		}
 
+	if (cw_driver_flags & CW_FLAG_MK2_REGISTERED) cw_hardware_mk2_remove();
 #ifdef CONFIG_PCI
 	if (cw_driver_flags & CW_FLAG_MK3_REGISTERED) pci_unregister_driver(&cw_hardware_mk3_pci_driver);
 	if (cw_driver_flags & CW_FLAG_MK4_REGISTERED) pci_unregister_driver(&cw_hardware_mk4_pci_driver);
 #endif /* CONFIG_PCI */
 	if (cw_driver_flags & CW_FLAG_CHRDEV_REGISTERED) unregister_chrdev(cw_major, CW_NAME);
 	}
-
 
 
 /****************************************************************************
@@ -192,6 +194,13 @@ cw_driver_module_init(
 	cw_driver_flags |= CW_FLAG_CHRDEV_REGISTERED;
 
 	/* search for controller hardware */
+
+	cw_debug(1, "searching for catweasel mk2");
+	if (cw_mk2_port != 0) {
+		result = cw_hardware_mk2_probe(cw_mk2_port);
+		cw_driver_flags |= CW_FLAG_MK2_REGISTERED;
+		if ((result < 0) && (result != -ENODEV)) goto error;
+	}
 
 #ifdef CONFIG_PCI
 	cw_debug(1, "searching for catweasel mk3");
@@ -236,9 +245,11 @@ module_exit(cw_driver_module_exit);
 #if LINUX_VERSION_CODE >= 0x020600
 module_param(cw_debug_level, int, 0);
 module_param(cw_major, int, 0);
+module_param(cw_mk2_port, int, 0);
 #else /* LINUX_VERSION_CODE */
 MODULE_PARM(cw_debug_level, "i");
 MODULE_PARM(cw_major, "i");
+MODULE_PARM(cw_mk2_port, "i");
 #endif /* LINUX_VERSION_CODE */
 MODULE_LICENSE("GPL");
 MODULE_DESCRIPTION("device driver for the catweasel floppy controller");

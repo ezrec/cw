@@ -33,6 +33,7 @@
 struct cw_controller;
 
 #define CW_HARDWARE_MODEL_NONE		0
+#define CW_HARDWARE_MODEL_MK2		2
 #define CW_HARDWARE_MODEL_MK3		3
 #define CW_HARDWARE_MODEL_MK4		4
 
@@ -59,11 +60,12 @@ struct cw_hardware
 
 
 
-
 #ifdef CONFIG_PCI
 extern struct pci_driver		cw_hardware_mk3_pci_driver;
 extern struct pci_driver		cw_hardware_mk4_pci_driver;
 #endif /* CONFIG_PCI */
+extern int				cw_hardware_mk2_probe(unsigned int port);
+extern void				cw_hardware_mk2_remove(void);
 extern int				cw_hardware_floppy_host_select(struct cw_hardware *);
 extern void				cw_hardware_floppy_mux_on(struct cw_hardware *);
 extern void				cw_hardware_floppy_mux_off(struct cw_hardware *);

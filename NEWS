@@ -1,3 +1,9 @@
+cw 0.13-ide-20100806
+        * added support for the CatWeasel Mk2 Anniversary Edition. This
+          support requires a modified 40-pin IDE cable with pins 37 and
+          38 (IDE_CS0 and IDE_CS1) swapped, and you will need to use the
+          'cw_mk2_port' module param (0x1f0 for primary IDE, 0x170 for sec.)
+
 cw 0.13-20090511
 	* included cwio as interface to the kernel driver for other programs
 	* included new FPGA firmware for MK4 cards
